@@ -3,14 +3,15 @@ import { AlertTriangle, CheckCircle, AlertCircle, ArrowUp, ArrowDown, Minus, Che
 import { RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Cell, Tooltip } from "recharts";
 import type { FinancialRatios } from "./RatioInputForm";
 
-interface RiskResultsProps {
+export interface RiskResultsProps {
   ratios: FinancialRatios;
+  assessment: RiskAssessment;
   onReset: () => void;
 }
 
-type RiskLevel = "low" | "medium" | "high";
+export type RiskLevel = "low" | "medium" | "high";
 
-interface RiskAssessment {
+export interface RiskAssessment {
   overallRisk: RiskLevel;
   riskScore: number;
   confidence: number;
@@ -27,104 +28,13 @@ interface RiskAssessment {
   }[];
 }
 
-// Simulated Gradient Boosting classification
-const calculateRiskAssessment = (ratios: FinancialRatios): RiskAssessment => {
-  // Normalize and weight each ratio
-  const liquidityScore = 
-    Math.min(ratios.currentRatio / 2, 1) * 0.4 +
-    Math.min(ratios.quickRatio / 1.5, 1) * 0.35 +
-    Math.min(ratios.cashRatio / 0.5, 1) * 0.25;
-
-  const profitabilityScore = 
-    Math.min(Math.max(ratios.grossProfitMargin, 0) / 50, 1) * 0.25 +
-    Math.min(Math.max(ratios.netProfitMargin + 10, 0) / 30, 1) * 0.25 +
-    Math.min(Math.max(ratios.returnOnAssets + 5, 0) / 25, 1) * 0.25 +
-    Math.min(Math.max(ratios.returnOnEquity + 10, 0) / 40, 1) * 0.25;
-
-  const leverageScore = 
-    Math.max(1 - ratios.debtToEquity / 4, 0) * 0.35 +
-    Math.max(1 - ratios.debtRatio, 0) * 0.35 +
-    Math.min(ratios.interestCoverage / 10, 1) * 0.3;
-
-  const efficiencyScore = 
-    Math.min(ratios.assetTurnover / 2, 1) * 0.35 +
-    Math.min(ratios.inventoryTurnover / 12, 1) * 0.35 +
-    Math.min(ratios.receivablesTurnover / 15, 1) * 0.3;
-
-  // Weighted average (simulating GB model output)
-  const overallScore = 
-    liquidityScore * 0.25 +
-    profitabilityScore * 0.30 +
-    leverageScore * 0.25 +
-    efficiencyScore * 0.20;
-
-  // Add some "model uncertainty" simulation
-  const confidence = 85 + Math.random() * 10;
-
-  // Determine risk level
-  let overallRisk: RiskLevel;
-  if (overallScore >= 0.65) {
-    overallRisk = "low";
-  } else if (overallScore >= 0.4) {
-    overallRisk = "medium";
-  } else {
-    overallRisk = "high";
-  }
-
-  // Generate impact factors
-  const factors: RiskAssessment["factors"] = [];
-  
-  if (ratios.currentRatio < 1) {
-    factors.push({ name: "Low Current Ratio", impact: "negative", description: "Current ratio below 1 indicates potential liquidity issues" });
-  } else if (ratios.currentRatio > 2) {
-    factors.push({ name: "Strong Current Ratio", impact: "positive", description: "Healthy liquidity position above 2" });
-  }
-
-  if (ratios.debtToEquity > 2) {
-    factors.push({ name: "High Debt-to-Equity", impact: "negative", description: "Leverage exceeds industry benchmarks" });
-  } else if (ratios.debtToEquity < 1) {
-    factors.push({ name: "Conservative Leverage", impact: "positive", description: "Low debt levels reduce financial risk" });
-  }
-
-  if (ratios.netProfitMargin < 0) {
-    factors.push({ name: "Negative Profit Margin", impact: "negative", description: "Company is operating at a loss" });
-  } else if (ratios.netProfitMargin > 15) {
-    factors.push({ name: "Strong Profitability", impact: "positive", description: "Above-average profit margins" });
-  }
-
-  if (ratios.interestCoverage < 1.5) {
-    factors.push({ name: "Weak Interest Coverage", impact: "negative", description: "May struggle to meet interest payments" });
-  }
-
-  if (factors.length < 3) {
-    factors.push({ name: "Moderate Financial Position", impact: "neutral", description: "Key ratios within acceptable ranges" });
-  }
-
-  return {
-    overallRisk,
-    riskScore: Math.round(overallScore * 100),
-    confidence: Math.round(confidence),
-    categoryScores: {
-      liquidity: Math.round(liquidityScore * 100),
-      profitability: Math.round(profitabilityScore * 100),
-      leverage: Math.round(leverageScore * 100),
-      efficiency: Math.round(efficiencyScore * 100),
-    },
-    factors: factors.slice(0, 4),
-  };
-};
-
-const RiskResults = ({ ratios, onReset }: RiskResultsProps) => {
-  const [assessment, setAssessment] = useState<RiskAssessment | null>(null);
+const RiskResults = ({ ratios, assessment, onReset }: RiskResultsProps) => {
   const [showDetails, setShowDetails] = useState(false);
 
   useEffect(() => {
-    const result = calculateRiskAssessment(ratios);
-    setAssessment(result);
-    
     const timer = setTimeout(() => setShowDetails(true), 500);
     return () => clearTimeout(timer);
-  }, [ratios]);
+  }, [assessment]);
 
   if (!assessment) return null;
 
