@@ -1,6 +1,5 @@
-import { ArrowRight, BarChart3, Shield, TrendingUp, Code } from "lucide-react";
+import { ArrowRight, BarChart3, Shield, TrendingUp } from "lucide-react";
 import { Button } from "./ui/button";
-import { Progress } from "./ui/progress";
 
 interface HeroSectionProps {
   onStartAssessment: () => void;
@@ -19,16 +18,10 @@ const HeroSection = ({ onStartAssessment }: HeroSectionProps) => {
 
       <div className="container mx-auto px-4 relative z-10">
         <div className="max-w-4xl mx-auto text-center">
-          {/* Project Progress Badge */}
-          <div className="inline-flex flex-col items-center gap-3 px-6 py-4 rounded-2xl glass mb-8 animate-fade-in border border-amber-500/30">
-            <div className="flex items-center gap-2">
-              <Code className="w-4 h-4 text-amber-500" />
-              <span className="text-sm font-medium text-amber-500">Project Development Status</span>
-            </div>
-            <div className="w-48">
-              <Progress value={50} className="h-2 bg-muted" />
-            </div>
-            <span className="text-xs text-muted-foreground">50% Complete - Work in Progress</span>
+          {/* Badge */}
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass mb-8 animate-fade-in">
+            <Shield className="w-4 h-4 text-primary" />
+            <span className="text-sm text-muted-foreground">Machine Learning Powered Analysis</span>
           </div>
 
           {/* Main heading */}
