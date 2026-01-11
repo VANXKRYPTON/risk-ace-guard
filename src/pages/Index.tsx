@@ -5,14 +5,17 @@ import RatioInputForm, { type FinancialRatios } from "@/components/RatioInputFor
 import RiskResults, { type RiskAssessment } from "@/components/RiskResults";
 import MethodologySection from "@/components/MethodologySection";
 import Footer from "@/components/Footer";
+import AssessmentHistory from "@/components/AssessmentHistory";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useSessionId } from "@/hooks/useSessionId";
 
 const Index = () => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [results, setResults] = useState<{ ratios: FinancialRatios; assessment: RiskAssessment } | null>(null);
   const assessmentRef = useRef<HTMLDivElement>(null);
   const resultsRef = useRef<HTMLDivElement>(null);
+  const sessionId = useSessionId();
 
   const handleStartAssessment = () => {
     assessmentRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -38,9 +41,37 @@ const Index = () => {
         return;
       }
 
-      setResults({ ratios, assessment: data.assessment });
+      const assessment = data.assessment as RiskAssessment;
+      setResults({ ratios, assessment });
+
+      // Save to history
+      if (sessionId) {
+        await supabase.from("assessment_history").insert({
+          session_id: sessionId,
+          current_ratio: ratios.currentRatio,
+          quick_ratio: ratios.quickRatio,
+          cash_ratio: ratios.cashRatio,
+          gross_profit_margin: ratios.grossProfitMargin,
+          net_profit_margin: ratios.netProfitMargin,
+          return_on_assets: ratios.returnOnAssets,
+          return_on_equity: ratios.returnOnEquity,
+          debt_to_equity: ratios.debtToEquity,
+          debt_ratio: ratios.debtRatio,
+          interest_coverage: ratios.interestCoverage,
+          asset_turnover: ratios.assetTurnover,
+          inventory_turnover: ratios.inventoryTurnover,
+          receivables_turnover: ratios.receivablesTurnover,
+          overall_risk: assessment.overallRisk,
+          risk_score: assessment.riskScore,
+          confidence: assessment.confidence,
+          liquidity_score: assessment.categoryScores.liquidity,
+          profitability_score: assessment.categoryScores.profitability,
+          leverage_score: assessment.categoryScores.leverage,
+          efficiency_score: assessment.categoryScores.efficiency,
+          factors: assessment.factors,
+        });
+      }
       
-      // Scroll to results
       setTimeout(() => {
         resultsRef.current?.scrollIntoView({ behavior: "smooth" });
       }, 100);
@@ -57,6 +88,13 @@ const Index = () => {
     handleStartAssessment();
   };
 
+  const handleLoadAssessment = (ratios: FinancialRatios, assessment: RiskAssessment) => {
+    setResults({ ratios, assessment });
+    setTimeout(() => {
+      resultsRef.current?.scrollIntoView({ behavior: "smooth" });
+    }, 100);
+  };
+
   return (
     <>
       <title>Business Risk Assessment | Financial Ratio Analysis & ML Classification</title>
@@ -70,6 +108,13 @@ const Index = () => {
         
         <main>
           <HeroSection onStartAssessment={handleStartAssessment} />
+          
+          {/* History Button */}
+          {sessionId && (
+            <div className="container mx-auto px-4 flex justify-center -mt-8 mb-8">
+              <AssessmentHistory sessionId={sessionId} onLoadAssessment={handleLoadAssessment} />
+            </div>
+          )}
           
           <div ref={assessmentRef}>
             <RatioInputForm onSubmit={handleSubmit} isLoading={isAnalyzing} />

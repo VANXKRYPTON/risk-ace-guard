@@ -4,7 +4,8 @@ import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import { Calculator, DollarSign, Percent, TrendingUp, Scale } from "lucide-react";
-
+import RatioTooltip from "./RatioTooltip";
+import IndustryPresets from "./IndustryPresets";
 interface FinancialRatios {
   // Liquidity Ratios
   currentRatio: number;
@@ -48,6 +49,10 @@ const initialRatios: FinancialRatios = {
 
 const RatioInputForm = ({ onSubmit, isLoading }: RatioInputFormProps) => {
   const [ratios, setRatios] = useState<FinancialRatios>(initialRatios);
+
+  const handleLoadPreset = (presetRatios: FinancialRatios) => {
+    setRatios(presetRatios);
+  };
 
   const handleChange = (key: keyof FinancialRatios, value: string) => {
     setRatios((prev) => ({
@@ -126,9 +131,12 @@ const RatioInputForm = ({ onSubmit, isLoading }: RatioInputFormProps) => {
             </p>
           </div>
 
+          {/* Industry Presets */}
+          <IndustryPresets onSelect={handleLoadPreset} />
+
           {/* Sample Data Buttons */}
           <div className="flex flex-wrap items-center justify-center gap-3 mb-8">
-            <span className="text-sm text-muted-foreground">Load sample:</span>
+            <span className="text-sm text-muted-foreground">Or load risk sample:</span>
             <Button
               variant="outline"
               size="sm"
@@ -183,18 +191,21 @@ const RatioInputForm = ({ onSubmit, isLoading }: RatioInputFormProps) => {
                     value={ratios.currentRatio}
                     onChange={(v) => handleChange("currentRatio", v)}
                     hint="Current Assets / Current Liabilities"
+                    ratioKey="currentRatio"
                   />
                   <RatioInput
                     label="Quick Ratio"
                     value={ratios.quickRatio}
                     onChange={(v) => handleChange("quickRatio", v)}
                     hint="(Current Assets - Inventory) / Current Liabilities"
+                    ratioKey="quickRatio"
                   />
                   <RatioInput
                     label="Cash Ratio"
                     value={ratios.cashRatio}
                     onChange={(v) => handleChange("cashRatio", v)}
                     hint="Cash / Current Liabilities"
+                    ratioKey="cashRatio"
                   />
                 </RatioCategory>
               </TabsContent>
@@ -206,24 +217,28 @@ const RatioInputForm = ({ onSubmit, isLoading }: RatioInputFormProps) => {
                     value={ratios.grossProfitMargin}
                     onChange={(v) => handleChange("grossProfitMargin", v)}
                     hint="(Revenue - COGS) / Revenue × 100"
+                    ratioKey="grossProfitMargin"
                   />
                   <RatioInput
                     label="Net Profit Margin (%)"
                     value={ratios.netProfitMargin}
                     onChange={(v) => handleChange("netProfitMargin", v)}
                     hint="Net Income / Revenue × 100"
+                    ratioKey="netProfitMargin"
                   />
                   <RatioInput
                     label="Return on Assets (%)"
                     value={ratios.returnOnAssets}
                     onChange={(v) => handleChange("returnOnAssets", v)}
                     hint="Net Income / Total Assets × 100"
+                    ratioKey="returnOnAssets"
                   />
                   <RatioInput
                     label="Return on Equity (%)"
                     value={ratios.returnOnEquity}
                     onChange={(v) => handleChange("returnOnEquity", v)}
                     hint="Net Income / Shareholders' Equity × 100"
+                    ratioKey="returnOnEquity"
                   />
                 </RatioCategory>
               </TabsContent>
@@ -235,18 +250,21 @@ const RatioInputForm = ({ onSubmit, isLoading }: RatioInputFormProps) => {
                     value={ratios.debtToEquity}
                     onChange={(v) => handleChange("debtToEquity", v)}
                     hint="Total Debt / Total Equity"
+                    ratioKey="debtToEquity"
                   />
                   <RatioInput
                     label="Debt Ratio"
                     value={ratios.debtRatio}
                     onChange={(v) => handleChange("debtRatio", v)}
                     hint="Total Debt / Total Assets"
+                    ratioKey="debtRatio"
                   />
                   <RatioInput
                     label="Interest Coverage Ratio"
                     value={ratios.interestCoverage}
                     onChange={(v) => handleChange("interestCoverage", v)}
                     hint="EBIT / Interest Expense"
+                    ratioKey="interestCoverage"
                   />
                 </RatioCategory>
               </TabsContent>
@@ -258,18 +276,21 @@ const RatioInputForm = ({ onSubmit, isLoading }: RatioInputFormProps) => {
                     value={ratios.assetTurnover}
                     onChange={(v) => handleChange("assetTurnover", v)}
                     hint="Revenue / Average Total Assets"
+                    ratioKey="assetTurnover"
                   />
                   <RatioInput
                     label="Inventory Turnover"
                     value={ratios.inventoryTurnover}
                     onChange={(v) => handleChange("inventoryTurnover", v)}
                     hint="COGS / Average Inventory"
+                    ratioKey="inventoryTurnover"
                   />
                   <RatioInput
                     label="Receivables Turnover"
                     value={ratios.receivablesTurnover}
                     onChange={(v) => handleChange("receivablesTurnover", v)}
                     hint="Net Credit Sales / Average Receivables"
+                    ratioKey="receivablesTurnover"
                   />
                 </RatioCategory>
               </TabsContent>
@@ -326,12 +347,14 @@ interface RatioInputProps {
   value: number;
   onChange: (value: string) => void;
   hint: string;
+  ratioKey?: string;
 }
 
-const RatioInput = ({ label, value, onChange, hint }: RatioInputProps) => (
+const RatioInput = ({ label, value, onChange, hint, ratioKey }: RatioInputProps) => (
   <div className="space-y-2">
-    <Label htmlFor={label} className="text-sm font-medium">
+    <Label htmlFor={label} className="text-sm font-medium flex items-center">
       {label}
+      {ratioKey && <RatioTooltip ratioKey={ratioKey} />}
     </Label>
     <Input
       id={label}

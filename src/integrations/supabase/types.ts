@@ -14,7 +14,90 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      assessment_history: {
+        Row: {
+          asset_turnover: number
+          cash_ratio: number
+          company_name: string | null
+          confidence: number
+          created_at: string
+          current_ratio: number
+          debt_ratio: number
+          debt_to_equity: number
+          efficiency_score: number
+          factors: Json
+          gross_profit_margin: number
+          id: string
+          interest_coverage: number
+          inventory_turnover: number
+          leverage_score: number
+          liquidity_score: number
+          net_profit_margin: number
+          overall_risk: string
+          profitability_score: number
+          quick_ratio: number
+          receivables_turnover: number
+          return_on_assets: number
+          return_on_equity: number
+          risk_score: number
+          session_id: string
+        }
+        Insert: {
+          asset_turnover: number
+          cash_ratio: number
+          company_name?: string | null
+          confidence: number
+          created_at?: string
+          current_ratio: number
+          debt_ratio: number
+          debt_to_equity: number
+          efficiency_score: number
+          factors?: Json
+          gross_profit_margin: number
+          id?: string
+          interest_coverage: number
+          inventory_turnover: number
+          leverage_score: number
+          liquidity_score: number
+          net_profit_margin: number
+          overall_risk: string
+          profitability_score: number
+          quick_ratio: number
+          receivables_turnover: number
+          return_on_assets: number
+          return_on_equity: number
+          risk_score: number
+          session_id: string
+        }
+        Update: {
+          asset_turnover?: number
+          cash_ratio?: number
+          company_name?: string | null
+          confidence?: number
+          created_at?: string
+          current_ratio?: number
+          debt_ratio?: number
+          debt_to_equity?: number
+          efficiency_score?: number
+          factors?: Json
+          gross_profit_margin?: number
+          id?: string
+          interest_coverage?: number
+          inventory_turnover?: number
+          leverage_score?: number
+          liquidity_score?: number
+          net_profit_margin?: number
+          overall_risk?: string
+          profitability_score?: number
+          quick_ratio?: number
+          receivables_turnover?: number
+          return_on_assets?: number
+          return_on_equity?: number
+          risk_score?: number
+          session_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
