@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { AlertTriangle, CheckCircle, AlertCircle, ArrowUp, ArrowDown, Minus, ChevronRight } from "lucide-react";
 import { RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Cell, Tooltip } from "recharts";
 import type { FinancialRatios } from "./RatioInputForm";
+import PDFExport from "./PDFExport";
+import IndustryComparison from "./IndustryComparison";
 
 export interface RiskResultsProps {
   ratios: FinancialRatios;
@@ -237,8 +239,14 @@ const RiskResults = ({ ratios, assessment, onReset }: RiskResultsProps) => {
                 </div>
               </div>
 
+              {/* Industry Comparison */}
+              <div className="lg:col-span-2">
+                <IndustryComparison assessment={assessment} />
+              </div>
+
               {/* Actions */}
               <div className="lg:col-span-2 flex flex-col sm:flex-row items-center justify-center gap-4 mt-4">
+                <PDFExport ratios={ratios} assessment={assessment} />
                 <button
                   onClick={onReset}
                   className="inline-flex items-center gap-2 text-primary hover:text-primary/80 transition-colors"
