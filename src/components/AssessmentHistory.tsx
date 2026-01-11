@@ -46,6 +46,7 @@ interface AssessmentHistoryProps {
 }
 
 const AssessmentHistory = ({ sessionId, onLoadAssessment }: AssessmentHistoryProps) => {
+  // sessionId is used for ownership verification on delete operations
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
@@ -82,10 +83,12 @@ const AssessmentHistory = ({ sessionId, onLoadAssessment }: AssessmentHistoryPro
 
   const handleDelete = async (id: string) => {
     try {
+      // Include session_id verification to ensure users can only delete their own assessments
       const { error } = await supabase
         .from("assessment_history")
         .delete()
-        .eq("id", id);
+        .eq("id", id)
+        .eq("session_id", sessionId);
 
       if (error) throw error;
       setHistory((prev) => prev.filter((item) => item.id !== id));
