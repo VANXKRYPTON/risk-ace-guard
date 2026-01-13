@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { History, Trash2, Eye, AlertTriangle, CheckCircle, AlertCircle } from "lucide-react";
 import { Button } from "./ui/button";
-import { supabase } from "@/integrations/supabase/client";
+import { useSessionSupabase } from "@/hooks/useSessionSupabase";
 import { toast } from "sonner";
 import type { FinancialRatios } from "./RatioInputForm";
 import type { RiskAssessment, RiskLevel } from "./RiskResults";
@@ -46,15 +46,18 @@ interface AssessmentHistoryProps {
 }
 
 const AssessmentHistory = ({ sessionId, onLoadAssessment }: AssessmentHistoryProps) => {
-  // sessionId is used for ownership verification on delete operations
+  const sessionSupabase = useSessionSupabase(sessionId);
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
 
   const fetchHistory = async () => {
+    if (!sessionSupabase) return;
+    
     setIsLoading(true);
     try {
-      const { data, error } = await supabase
+      // Session-id header is automatically included via sessionSupabase for RLS verification
+      const { data, error } = await sessionSupabase
         .from("assessment_history")
         .select("*")
         .eq("session_id", sessionId)
@@ -82,9 +85,11 @@ const AssessmentHistory = ({ sessionId, onLoadAssessment }: AssessmentHistoryPro
   }, [isOpen, sessionId]);
 
   const handleDelete = async (id: string) => {
+    if (!sessionSupabase) return;
+    
     try {
-      // Include session_id verification to ensure users can only delete their own assessments
-      const { error } = await supabase
+      // Session-id header is automatically included via sessionSupabase for RLS verification
+      const { error } = await sessionSupabase
         .from("assessment_history")
         .delete()
         .eq("id", id)
