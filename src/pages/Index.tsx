@@ -7,6 +7,7 @@ import MethodologySection from "@/components/MethodologySection";
 import Footer from "@/components/Footer";
 import AssessmentHistory from "@/components/AssessmentHistory";
 import { supabase } from "@/integrations/supabase/client";
+import { createSessionSupabase } from "@/hooks/useSessionSupabase";
 import { toast } from "sonner";
 import { useSessionId } from "@/hooks/useSessionId";
 
@@ -44,32 +45,35 @@ const Index = () => {
       const assessment = data.assessment as RiskAssessment;
       setResults({ ratios, assessment });
 
-      // Save to history
+      // Save to history - use session Supabase client with x-session-id header for RLS verification
       if (sessionId) {
-        await supabase.from("assessment_history").insert({
-          session_id: sessionId,
-          current_ratio: ratios.currentRatio,
-          quick_ratio: ratios.quickRatio,
-          cash_ratio: ratios.cashRatio,
-          gross_profit_margin: ratios.grossProfitMargin,
-          net_profit_margin: ratios.netProfitMargin,
-          return_on_assets: ratios.returnOnAssets,
-          return_on_equity: ratios.returnOnEquity,
-          debt_to_equity: ratios.debtToEquity,
-          debt_ratio: ratios.debtRatio,
-          interest_coverage: ratios.interestCoverage,
-          asset_turnover: ratios.assetTurnover,
-          inventory_turnover: ratios.inventoryTurnover,
-          receivables_turnover: ratios.receivablesTurnover,
-          overall_risk: assessment.overallRisk,
-          risk_score: assessment.riskScore,
-          confidence: assessment.confidence,
-          liquidity_score: assessment.categoryScores.liquidity,
-          profitability_score: assessment.categoryScores.profitability,
-          leverage_score: assessment.categoryScores.leverage,
-          efficiency_score: assessment.categoryScores.efficiency,
-          factors: assessment.factors,
-        });
+        const sessionSupabase = createSessionSupabase(sessionId);
+        await sessionSupabase
+          .from("assessment_history")
+          .insert({
+            session_id: sessionId,
+            current_ratio: ratios.currentRatio,
+            quick_ratio: ratios.quickRatio,
+            cash_ratio: ratios.cashRatio,
+            gross_profit_margin: ratios.grossProfitMargin,
+            net_profit_margin: ratios.netProfitMargin,
+            return_on_assets: ratios.returnOnAssets,
+            return_on_equity: ratios.returnOnEquity,
+            debt_to_equity: ratios.debtToEquity,
+            debt_ratio: ratios.debtRatio,
+            interest_coverage: ratios.interestCoverage,
+            asset_turnover: ratios.assetTurnover,
+            inventory_turnover: ratios.inventoryTurnover,
+            receivables_turnover: ratios.receivablesTurnover,
+            overall_risk: assessment.overallRisk,
+            risk_score: assessment.riskScore,
+            confidence: assessment.confidence,
+            liquidity_score: assessment.categoryScores.liquidity,
+            profitability_score: assessment.categoryScores.profitability,
+            leverage_score: assessment.categoryScores.leverage,
+            efficiency_score: assessment.categoryScores.efficiency,
+            factors: assessment.factors,
+          });
       }
       
       setTimeout(() => {
