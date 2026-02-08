@@ -1,5 +1,6 @@
 import { ArrowRight, BarChart3, Shield, TrendingUp } from "lucide-react";
 import { Button } from "./ui/button";
+import { Link } from "react-router-dom";
 
 interface HeroSectionProps {
   onStartAssessment: () => void;
@@ -42,9 +43,11 @@ const HeroSection = ({ onStartAssessment }: HeroSectionProps) => {
               Start Assessment
               <ArrowRight className="w-5 h-5" />
             </Button>
-            <Button variant="glass" size="lg">
-              Learn Methodology
-            </Button>
+            <Link to="/methodology">
+              <Button variant="glass" size="lg">
+                Learn Methodology
+              </Button>
+            </Link>
           </div>
 
           {/* Feature cards */}

@@ -41,6 +41,7 @@ export type Database = {
           return_on_equity: number
           risk_score: number
           session_id: string
+          user_id: string | null
         }
         Insert: {
           asset_turnover: number
@@ -68,6 +69,7 @@ export type Database = {
           return_on_equity: number
           risk_score: number
           session_id: string
+          user_id?: string | null
         }
         Update: {
           asset_turnover?: number
@@ -95,6 +97,31 @@ export type Database = {
           return_on_equity?: number
           risk_score?: number
           session_id?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          display_name: string | null
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
