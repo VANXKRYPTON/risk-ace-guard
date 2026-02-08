@@ -4,6 +4,8 @@ import { RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, Responsi
 import type { FinancialRatios } from "./RatioInputForm";
 import PDFExport from "./PDFExport";
 import IndustryComparison from "./IndustryComparison";
+import ZScoreGauge from "./ZScoreGauge";
+import RecommendationsPanel from "./RecommendationsPanel";
 
 export interface RiskResultsProps {
   ratios: FinancialRatios;
@@ -17,6 +19,7 @@ export interface RiskAssessment {
   overallRisk: RiskLevel;
   riskScore: number;
   confidence: number;
+  altmanZScore?: number;
   categoryScores: {
     liquidity: number;
     profitability: number;
@@ -128,8 +131,16 @@ const RiskResults = ({ ratios, assessment, onReset }: RiskResultsProps) => {
                   </span>
                   <span className="text-muted-foreground">•</span>
                   <span className="text-muted-foreground">
-                    Algorithm: <span className="text-foreground font-medium">Gradient Boosting</span>
+                    Algorithm: <span className="text-foreground font-medium">Ensemble (GB + Z-Score)</span>
                   </span>
+                  {assessment.altmanZScore !== undefined && (
+                    <>
+                      <span className="text-muted-foreground">•</span>
+                      <span className="text-muted-foreground">
+                        Z-Score: <span className="text-foreground font-medium">{assessment.altmanZScore.toFixed(2)}</span>
+                      </span>
+                    </>
+                  )}
                 </div>
               </div>
             </div>
@@ -237,6 +248,18 @@ const RiskResults = ({ ratios, assessment, onReset }: RiskResultsProps) => {
                     </div>
                   ))}
                 </div>
+              </div>
+
+              {/* Altman Z-Score */}
+              {assessment.altmanZScore !== undefined && (
+                <div className="lg:col-span-1">
+                  <ZScoreGauge zScore={assessment.altmanZScore} />
+                </div>
+              )}
+
+              {/* Recommendations */}
+              <div className={assessment.altmanZScore !== undefined ? "lg:col-span-1" : "lg:col-span-2"}>
+                <RecommendationsPanel assessment={assessment} />
               </div>
 
               {/* Industry Comparison */}
