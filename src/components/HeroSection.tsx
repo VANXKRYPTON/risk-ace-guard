@@ -32,8 +32,8 @@ const HeroSection = ({ onStartAssessment }: HeroSectionProps) => {
 
           {/* Subtitle */}
           <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-10 animate-fade-in" style={{ animationDelay: "0.2s" }}>
-            Advanced risk classification powered by Gradient Boosting algorithms, 
-            analyzing key financial ratios to predict business health and potential risks.
+            Ensemble risk classification powered by Gradient Boosting + Altman Z-Score models, 
+            analyzing 18+ financial ratios to predict business health and bankruptcy probability.
           </p>
 
           {/* CTA Buttons */}
@@ -51,18 +51,18 @@ const HeroSection = ({ onStartAssessment }: HeroSectionProps) => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 animate-slide-up" style={{ animationDelay: "0.4s" }}>
             <FeatureCard
               icon={<BarChart3 className="w-6 h-6" />}
-              title="Financial Ratio Analysis"
-              description="Comprehensive evaluation of liquidity, profitability, leverage, and efficiency ratios"
+              title="18+ Financial Ratios"
+              description="Comprehensive evaluation of liquidity, profitability, leverage, efficiency, and Z-Score components"
             />
             <FeatureCard
               icon={<TrendingUp className="w-6 h-6" />}
-              title="Gradient Boosting ML"
-              description="State-of-the-art classification algorithms for accurate risk prediction"
+              title="Ensemble ML Model"
+              description="Gradient Boosting + Altman Z-Score ensemble for superior bankruptcy prediction accuracy"
             />
             <FeatureCard
               icon={<Shield className="w-6 h-6" />}
-              title="Risk Classification"
-              description="Clear categorization into Low, Medium, and High risk levels"
+              title="Altman Z-Score"
+              description="Nobel-caliber bankruptcy prediction model with 95% accuracy (Edward Altman, 1968)"
             />
           </div>
         </div>

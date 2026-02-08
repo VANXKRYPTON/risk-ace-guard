@@ -111,6 +111,7 @@ const AssessmentHistory = ({ sessionId, onLoadAssessment }: AssessmentHistoryPro
       cashRatio: item.cash_ratio,
       grossProfitMargin: item.gross_profit_margin,
       netProfitMargin: item.net_profit_margin,
+      operatingMargin: 0,
       returnOnAssets: item.return_on_assets,
       returnOnEquity: item.return_on_equity,
       debtToEquity: item.debt_to_equity,
@@ -119,6 +120,11 @@ const AssessmentHistory = ({ sessionId, onLoadAssessment }: AssessmentHistoryPro
       assetTurnover: item.asset_turnover,
       inventoryTurnover: item.inventory_turnover,
       receivablesTurnover: item.receivables_turnover,
+      workingCapitalTA: 0,
+      retainedEarningsTA: 0,
+      ebitTA: 0,
+      marketEquityTL: 0,
+      salesTA: 0,
     };
 
     const assessment: RiskAssessment = {

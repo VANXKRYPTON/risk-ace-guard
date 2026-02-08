@@ -75,6 +75,36 @@ const ratioInfo: Record<string, { benchmark: string; interpretation: string; imp
     interpretation: "How quickly receivables are collected. Higher is better for cash flow.",
     importance: "Indicates collection efficiency and credit policy effectiveness.",
   },
+  operatingMargin: {
+    benchmark: "Healthy: > 15%, Concerning: < 5%",
+    interpretation: "Operating income as percentage of revenue. Shows core operational profitability.",
+    importance: "Excludes non-operating items for cleaner profitability picture.",
+  },
+  workingCapitalTA: {
+    benchmark: "Healthy: > 0.2, Concerning: < 0",
+    interpretation: "Net liquid assets relative to total assets. Measures short-term financial health.",
+    importance: "Altman Z-Score X₁ — liquidity component of bankruptcy prediction.",
+  },
+  retainedEarningsTA: {
+    benchmark: "Strong: > 0.4, Weak: < 0.1",
+    interpretation: "Cumulative profitability relative to assets. Reflects company age and earning power.",
+    importance: "Altman Z-Score X₂ — younger firms score lower, increasing risk.",
+  },
+  ebitTA: {
+    benchmark: "Strong: > 0.15, Weak: < 0.05",
+    interpretation: "Operating profitability independent of leverage and taxes.",
+    importance: "Altman Z-Score X₃ — the most significant predictor of bankruptcy.",
+  },
+  marketEquityTL: {
+    benchmark: "Safe: > 1.5, Risky: < 0.5",
+    interpretation: "Market valuation relative to total debt obligations.",
+    importance: "Altman Z-Score X₄ — shows how much assets can decline before insolvency.",
+  },
+  salesTA: {
+    benchmark: "Industry varies: Retail 2.0+, Real Estate 0.2",
+    interpretation: "Revenue generating ability of assets.",
+    importance: "Altman Z-Score X₅ — measures competitive position.",
+  },
 };
 
 const RatioTooltip = ({ ratioKey }: RatioTooltipProps) => {
