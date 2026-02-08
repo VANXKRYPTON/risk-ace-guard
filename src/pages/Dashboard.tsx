@@ -6,7 +6,9 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { BarChart3, Trash2, Eye, AlertTriangle, CheckCircle, AlertCircle, TrendingUp, Shield, Plus } from "lucide-react";
+import { motion } from "framer-motion";
+import { BarChart3, Trash2, AlertTriangle, CheckCircle, AlertCircle, TrendingUp, Shield, Plus, Activity, PieChart as PieChartIcon } from "lucide-react";
+import { PieChart, Pie, Cell, ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid } from "recharts";
 
 interface AssessmentRecord {
   id: string;
@@ -81,6 +83,18 @@ const Dashboard = () => {
 
   const avgScore = assessments.length > 0 ? Math.round(assessments.reduce((sum, a) => sum + a.risk_score, 0) / assessments.length) : 0;
 
+  const pieData = [
+    { name: "Low Risk", value: riskCounts.low, color: "hsl(160, 84%, 39%)" },
+    { name: "Medium Risk", value: riskCounts.medium, color: "hsl(45, 93%, 47%)" },
+    { name: "High Risk", value: riskCounts.high, color: "hsl(0, 72%, 51%)" },
+  ].filter(d => d.value > 0);
+
+  const trendData = assessments.slice(0, 10).reverse().map((a, i) => ({
+    name: a.company_name || `#${i + 1}`,
+    score: a.risk_score,
+    date: new Date(a.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric" }),
+  }));
+
   return (
     <>
       <title>Dashboard | Business Risk Assessment</title>
@@ -90,7 +104,11 @@ const Dashboard = () => {
           <div className="container mx-auto px-4">
             <div className="max-w-6xl mx-auto">
               {/* Welcome */}
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8"
+              >
                 <div>
                   <h1 className="text-3xl font-bold">Welcome, {profileName || user.email}</h1>
                   <p className="text-muted-foreground">Your risk assessment dashboard</p>
@@ -102,18 +120,112 @@ const Dashboard = () => {
                   </Button>
                   <Button variant="outline" onClick={handleSignOut}>Sign Out</Button>
                 </div>
-              </div>
+              </motion.div>
 
               {/* Stats Cards */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-                <StatCard icon={<BarChart3 className="w-5 h-5 text-primary" />} label="Total Assessments" value={assessments.length.toString()} />
-                <StatCard icon={<TrendingUp className="w-5 h-5 text-primary" />} label="Avg. Risk Score" value={avgScore.toString()} />
-                <StatCard icon={<CheckCircle className="w-5 h-5 text-risk-low" />} label="Low Risk" value={riskCounts.low.toString()} />
-                <StatCard icon={<AlertTriangle className="w-5 h-5 text-risk-high" />} label="High Risk" value={riskCounts.high.toString()} />
+                {[
+                  { icon: <BarChart3 className="w-5 h-5 text-primary" />, label: "Total Assessments", value: assessments.length.toString(), delay: 0 },
+                  { icon: <TrendingUp className="w-5 h-5 text-primary" />, label: "Avg. Risk Score", value: avgScore.toString(), delay: 0.05 },
+                  { icon: <CheckCircle className="w-5 h-5 text-risk-low" />, label: "Low Risk", value: riskCounts.low.toString(), delay: 0.1 },
+                  { icon: <AlertTriangle className="w-5 h-5 text-risk-high" />, label: "High Risk", value: riskCounts.high.toString(), delay: 0.15 },
+                ].map((card, i) => (
+                  <motion.div
+                    key={i}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: card.delay }}
+                  >
+                    <StatCard {...card} />
+                  </motion.div>
+                ))}
               </div>
 
+              {/* Charts Row */}
+              {assessments.length > 0 && (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.2 }}
+                  className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8"
+                >
+                  {/* Risk Distribution Pie Chart */}
+                  <div className="glass rounded-2xl p-6">
+                    <div className="flex items-center gap-2 mb-4">
+                      <PieChartIcon className="w-5 h-5 text-primary" />
+                      <h3 className="font-semibold">Risk Distribution</h3>
+                    </div>
+                    <div className="h-52">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <PieChart>
+                          <Pie
+                            data={pieData}
+                            cx="50%"
+                            cy="50%"
+                            innerRadius={50}
+                            outerRadius={80}
+                            paddingAngle={4}
+                            dataKey="value"
+                          >
+                            {pieData.map((entry, index) => (
+                              <Cell key={`cell-${index}`} fill={entry.color} />
+                            ))}
+                          </Pie>
+                          <Tooltip
+                            contentStyle={{
+                              backgroundColor: "hsl(var(--card))",
+                              border: "1px solid hsl(var(--border))",
+                              borderRadius: "8px",
+                            }}
+                          />
+                        </PieChart>
+                      </ResponsiveContainer>
+                    </div>
+                    <div className="flex justify-center gap-4 mt-2">
+                      {pieData.map((d, i) => (
+                        <div key={i} className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                          <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: d.color }} />
+                          {d.name} ({d.value})
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Trend Line Chart */}
+                  <div className="glass rounded-2xl p-6">
+                    <div className="flex items-center gap-2 mb-4">
+                      <Activity className="w-5 h-5 text-primary" />
+                      <h3 className="font-semibold">Score Trend</h3>
+                    </div>
+                    <div className="h-52">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <LineChart data={trendData}>
+                          <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                          <XAxis dataKey="date" tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 10 }} />
+                          <YAxis domain={[0, 100]} tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 10 }} />
+                          <Tooltip
+                            contentStyle={{
+                              backgroundColor: "hsl(var(--card))",
+                              border: "1px solid hsl(var(--border))",
+                              borderRadius: "8px",
+                            }}
+                          />
+                          <Line type="monotone" dataKey="score" stroke="hsl(var(--primary))" strokeWidth={2} dot={{ fill: "hsl(var(--primary))", r: 4 }} />
+                        </LineChart>
+                      </ResponsiveContainer>
+                    </div>
+                    <p className="text-xs text-muted-foreground text-center mt-2">Last {trendData.length} assessments (higher = healthier)</p>
+                  </div>
+                </motion.div>
+              )}
+
               {/* Assessments Table */}
-              <div className="glass rounded-2xl p-6">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+                className="glass rounded-2xl p-6"
+              >
                 <h2 className="text-xl font-semibold mb-6">Assessment History</h2>
                 {isLoading ? (
                   <div className="flex justify-center py-12">
@@ -174,7 +286,7 @@ const Dashboard = () => {
                     </table>
                   </div>
                 )}
-              </div>
+              </motion.div>
             </div>
           </div>
         </main>
@@ -184,8 +296,8 @@ const Dashboard = () => {
   );
 };
 
-const StatCard = ({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) => (
-  <div className="glass rounded-xl p-4">
+const StatCard = ({ icon, label, value }: { icon: React.ReactNode; label: string; value: string; delay?: number }) => (
+  <div className="glass rounded-xl p-4 hover:border-primary/30 transition-colors">
     <div className="flex items-center gap-2 mb-2">{icon}<span className="text-xs text-muted-foreground">{label}</span></div>
     <div className="text-2xl font-bold">{value}</div>
   </div>
