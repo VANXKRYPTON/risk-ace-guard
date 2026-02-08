@@ -8,15 +8,21 @@ import Footer from "@/components/Footer";
 import AssessmentHistory from "@/components/AssessmentHistory";
 import { supabase } from "@/integrations/supabase/client";
 import { createSessionSupabase } from "@/hooks/useSessionSupabase";
+import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { useSessionId } from "@/hooks/useSessionId";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Building2 } from "lucide-react";
 
 const Index = () => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [results, setResults] = useState<{ ratios: FinancialRatios; assessment: RiskAssessment } | null>(null);
+  const [companyName, setCompanyName] = useState("");
   const assessmentRef = useRef<HTMLDivElement>(null);
   const resultsRef = useRef<HTMLDivElement>(null);
   const sessionId = useSessionId();
+  const { user } = useAuth();
 
   const handleStartAssessment = () => {
     assessmentRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -45,35 +51,43 @@ const Index = () => {
       const assessment = data.assessment as RiskAssessment;
       setResults({ ratios, assessment });
 
-      // Save to history - use session Supabase client with x-session-id header for RLS verification
-      if (sessionId) {
+      // Save to history
+      const insertData = {
+        current_ratio: ratios.currentRatio,
+        quick_ratio: ratios.quickRatio,
+        cash_ratio: ratios.cashRatio,
+        gross_profit_margin: ratios.grossProfitMargin,
+        net_profit_margin: ratios.netProfitMargin,
+        return_on_assets: ratios.returnOnAssets,
+        return_on_equity: ratios.returnOnEquity,
+        debt_to_equity: ratios.debtToEquity,
+        debt_ratio: ratios.debtRatio,
+        interest_coverage: ratios.interestCoverage,
+        asset_turnover: ratios.assetTurnover,
+        inventory_turnover: ratios.inventoryTurnover,
+        receivables_turnover: ratios.receivablesTurnover,
+        overall_risk: assessment.overallRisk,
+        risk_score: assessment.riskScore,
+        confidence: assessment.confidence,
+        liquidity_score: assessment.categoryScores.liquidity,
+        profitability_score: assessment.categoryScores.profitability,
+        leverage_score: assessment.categoryScores.leverage,
+        efficiency_score: assessment.categoryScores.efficiency,
+        factors: assessment.factors,
+        company_name: companyName || null,
+      };
+
+      if (user) {
+        // Save with user_id for authenticated users
+        await supabase
+          .from("assessment_history")
+          .insert({ ...insertData, user_id: user.id, session_id: sessionId || "authenticated" });
+      } else if (sessionId) {
+        // Fallback to session-based saving
         const sessionSupabase = createSessionSupabase(sessionId);
         await sessionSupabase
           .from("assessment_history")
-          .insert({
-            session_id: sessionId,
-            current_ratio: ratios.currentRatio,
-            quick_ratio: ratios.quickRatio,
-            cash_ratio: ratios.cashRatio,
-            gross_profit_margin: ratios.grossProfitMargin,
-            net_profit_margin: ratios.netProfitMargin,
-            return_on_assets: ratios.returnOnAssets,
-            return_on_equity: ratios.returnOnEquity,
-            debt_to_equity: ratios.debtToEquity,
-            debt_ratio: ratios.debtRatio,
-            interest_coverage: ratios.interestCoverage,
-            asset_turnover: ratios.assetTurnover,
-            inventory_turnover: ratios.inventoryTurnover,
-            receivables_turnover: ratios.receivablesTurnover,
-            overall_risk: assessment.overallRisk,
-            risk_score: assessment.riskScore,
-            confidence: assessment.confidence,
-            liquidity_score: assessment.categoryScores.liquidity,
-            profitability_score: assessment.categoryScores.profitability,
-            leverage_score: assessment.categoryScores.leverage,
-            efficiency_score: assessment.categoryScores.efficiency,
-            factors: assessment.factors,
-          });
+          .insert({ ...insertData, session_id: sessionId });
       }
       
       setTimeout(() => {
@@ -101,10 +115,10 @@ const Index = () => {
 
   return (
     <>
-      <title>Business Risk Assessment | Financial Ratio Analysis & ML Classification</title>
+      <title>Business Risk Assessment | Financial Ratio Analysis & Ensemble ML Classification</title>
       <meta
         name="description"
-        content="Advanced business risk assessment tool using financial ratio analysis and Gradient Boosting classification algorithms. Analyze liquidity, profitability, leverage, and efficiency ratios."
+        content="Advanced business risk assessment tool using financial ratio analysis, Gradient Boosting classification, and Altman Z-Score ensemble models. Analyze liquidity, profitability, leverage, and efficiency ratios."
       />
 
       <div className="min-h-screen bg-background">
@@ -113,14 +127,31 @@ const Index = () => {
         <main>
           <HeroSection onStartAssessment={handleStartAssessment} />
           
-          {/* History Button */}
-          {sessionId && (
+          {/* History Button (session-based for non-auth users) */}
+          {sessionId && !user && (
             <div className="container mx-auto px-4 flex justify-center -mt-8 mb-8">
               <AssessmentHistory sessionId={sessionId} onLoadAssessment={handleLoadAssessment} />
             </div>
           )}
           
           <div ref={assessmentRef}>
+            {/* Company Name Input */}
+            <div className="container mx-auto px-4 max-w-4xl mb-6">
+              <div className="glass rounded-xl p-4 flex items-center gap-4">
+                <Building2 className="w-5 h-5 text-primary flex-shrink-0" />
+                <div className="flex-1">
+                  <Label htmlFor="companyName" className="text-sm font-medium">Company Name</Label>
+                  <Input
+                    id="companyName"
+                    value={companyName}
+                    onChange={(e) => setCompanyName(e.target.value)}
+                    placeholder="Enter company name for this assessment"
+                    className="bg-secondary/50 border-border/50 mt-1"
+                  />
+                </div>
+              </div>
+            </div>
+
             <RatioInputForm onSubmit={handleSubmit} isLoading={isAnalyzing} />
           </div>
 

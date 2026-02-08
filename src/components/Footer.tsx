@@ -1,4 +1,5 @@
-import { BarChart3, Github, BookOpen, Mail } from "lucide-react";
+import { BarChart3, BookOpen, Mail } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const Footer = () => {
   return (
@@ -6,7 +7,6 @@ const Footer = () => {
       <div className="container mx-auto px-4">
         <div className="max-w-6xl mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
-            {/* Brand */}
             <div>
               <div className="flex items-center gap-3 mb-4">
                 <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center">
@@ -16,34 +16,32 @@ const Footer = () => {
               </div>
               <p className="text-sm text-muted-foreground">
                 Business Risk Assessment using Financial Ratio Analysis
-                and Gradient Boosting Classification Algorithms.
+                and Ensemble ML Classification (Gradient Boosting + Altman Z-Score).
               </p>
             </div>
 
-            {/* Quick Links */}
             <div>
               <h4 className="font-medium mb-4">Resources</h4>
               <ul className="space-y-2">
                 <li>
-                  <a href="#methodology" className="text-sm text-muted-foreground hover:text-foreground transition-colors inline-flex items-center gap-2">
+                  <Link to="/methodology" className="text-sm text-muted-foreground hover:text-foreground transition-colors inline-flex items-center gap-2">
                     <BookOpen className="w-4 h-4" />
-                    Methodology
-                  </a>
+                    Research Methodology
+                  </Link>
                 </li>
                 <li>
-                  <a href="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors inline-flex items-center gap-2">
-                    <Github className="w-4 h-4" />
-                    Source Code
-                  </a>
+                  <Link to="/dashboard" className="text-sm text-muted-foreground hover:text-foreground transition-colors inline-flex items-center gap-2">
+                    <BarChart3 className="w-4 h-4" />
+                    Dashboard
+                  </Link>
                 </li>
               </ul>
             </div>
 
-            {/* Contact */}
             <div>
               <h4 className="font-medium mb-4">Project Info</h4>
               <p className="text-sm text-muted-foreground mb-2">
-                Major Project - College Research
+                Major Project — College Research
               </p>
               <a href="mailto:contact@example.com" className="text-sm text-muted-foreground hover:text-foreground transition-colors inline-flex items-center gap-2">
                 <Mail className="w-4 h-4" />
@@ -54,10 +52,10 @@ const Footer = () => {
 
           <div className="border-t border-border/50 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
             <p className="text-sm text-muted-foreground">
-              © 2024 Business Risk Assessment Project. All rights reserved.
+              © 2025 Business Risk Assessment Project. All rights reserved.
             </p>
             <div className="flex items-center gap-4 text-sm text-muted-foreground">
-              <span>Powered by Gradient Boosting</span>
+              <span>Powered by Ensemble ML (GB + Altman Z-Score)</span>
             </div>
           </div>
         </div>
