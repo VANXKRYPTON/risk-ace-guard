@@ -31,6 +31,9 @@ const Header = () => {
             <Link to="/methodology" className="text-sm text-muted-foreground hover:text-foreground transition-colors hidden sm:block">
               Methodology
             </Link>
+            <Link to="/presentation" className="text-sm text-muted-foreground hover:text-foreground transition-colors hidden sm:block">
+              Presentation
+            </Link>
             {user ? (
               <Link to="/dashboard">
                 <Button variant="outline" size="sm" className="gap-2">
