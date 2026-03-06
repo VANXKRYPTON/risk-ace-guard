@@ -8,6 +8,7 @@ import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import Methodology from "./pages/Methodology";
 import NotFound from "./pages/NotFound";
+import ArchitectureDocument from "./pages/ArchitectureDocument";
 
 const queryClient = new QueryClient();
 
