@@ -27,6 +27,121 @@ interface FinancialRatios {
   salesTA: number;
 }
 
+type RiskLevel = "low" | "medium" | "high";
+
+interface RiskAssessment {
+  overallRisk: RiskLevel;
+  riskScore: number;
+  confidence: number;
+  altmanZScore: number;
+  categoryScores: {
+    liquidity: number;
+    profitability: number;
+    leverage: number;
+    efficiency: number;
+  };
+  factors: {
+    name: string;
+    impact: "positive" | "negative" | "neutral";
+    description: string;
+  }[];
+}
+
+const clamp = (value: number, min = 0, max = 100) => Math.min(max, Math.max(min, value));
+const roundScore = (value: number) => Math.round(clamp(value));
+
+const higherIsBetter = (value: number, weak: number, strong: number) => {
+  if (!Number.isFinite(value)) return 50;
+  return clamp(((value - weak) / (strong - weak)) * 100);
+};
+
+const lowerIsBetter = (value: number, strong: number, weak: number) => {
+  if (!Number.isFinite(value)) return 50;
+  return clamp(((weak - value) / (weak - strong)) * 100);
+};
+
+const calculateAltmanZScore = (ratios: FinancialRatios) =>
+  1.2 * (ratios.workingCapitalTA || 0) +
+  1.4 * (ratios.retainedEarningsTA || 0) +
+  3.3 * (ratios.ebitTA || 0) +
+  0.6 * (ratios.marketEquityTL || 0) +
+  1.0 * (ratios.salesTA || 0);
+
+const zScoreHealth = (zScore: number) => {
+  if (zScore > 2.99) return 90;
+  if (zScore > 1.81) return 55 + ((zScore - 1.81) / (2.99 - 1.81)) * 25;
+  return clamp(20 + (zScore / 1.81) * 30, 5, 50);
+};
+
+const buildDeterministicAssessment = (ratios: FinancialRatios): RiskAssessment => {
+  const altmanZScore = calculateAltmanZScore(ratios);
+  const liquidity = roundScore(
+    higherIsBetter(ratios.currentRatio, 0.8, 2.0) * 0.45 +
+      higherIsBetter(ratios.quickRatio, 0.5, 1.5) * 0.35 +
+      higherIsBetter(ratios.cashRatio, 0.1, 0.5) * 0.2,
+  );
+  const profitability = roundScore(
+    higherIsBetter(ratios.grossProfitMargin, 0, 40) * 0.2 +
+      higherIsBetter(ratios.operatingMargin || 0, -5, 15) * 0.25 +
+      higherIsBetter(ratios.netProfitMargin, -5, 12) * 0.25 +
+      higherIsBetter(ratios.returnOnAssets, -2, 8) * 0.15 +
+      higherIsBetter(ratios.returnOnEquity, -5, 15) * 0.15,
+  );
+  const leverage = roundScore(
+    lowerIsBetter(ratios.debtToEquity, 0.5, 3.0) * 0.4 +
+      lowerIsBetter(ratios.debtRatio, 0.35, 0.8) * 0.3 +
+      higherIsBetter(ratios.interestCoverage, 1.0, 5.0) * 0.3,
+  );
+  const efficiency = roundScore(
+    higherIsBetter(ratios.assetTurnover, 0.4, 1.5) * 0.35 +
+      higherIsBetter(ratios.inventoryTurnover, 2.0, 8.0) * 0.3 +
+      higherIsBetter(ratios.receivablesTurnover, 3.0, 10.0) * 0.35,
+  );
+
+  const categoryAverage = (liquidity + profitability + leverage + efficiency) / 4;
+  const operatingHealth = profitability * 0.55 + efficiency * 0.25 + liquidity * 0.2;
+  const riskScore = roundScore(categoryAverage * 0.5 + zScoreHealth(altmanZScore) * 0.3 + operatingHealth * 0.2);
+  const overallRisk: RiskLevel = riskScore >= 65 ? "low" : riskScore >= 40 ? "medium" : "high";
+  const zScoreZone = altmanZScore > 2.99 ? "Safe Zone" : altmanZScore > 1.81 ? "Grey Zone" : "Distress Zone";
+
+  const factors: RiskAssessment["factors"] = [
+    {
+      name: "Altman Z-Score",
+      impact: altmanZScore > 2.99 ? "positive" : altmanZScore > 1.81 ? "neutral" : "negative",
+      description: `Z-Score of ${altmanZScore.toFixed(2)} places the company in the ${zScoreZone}.`,
+    },
+    {
+      name: "Liquidity Position",
+      impact: liquidity >= 65 ? "positive" : liquidity >= 40 ? "neutral" : "negative",
+      description: `Liquidity score is ${liquidity}/100 based on current, quick, and cash ratios.`,
+    },
+    {
+      name: "Profitability Quality",
+      impact: profitability >= 65 ? "positive" : profitability >= 40 ? "neutral" : "negative",
+      description: `Profitability score is ${profitability}/100 using margin, ROA, and ROE indicators.`,
+    },
+    {
+      name: "Debt Service Capacity",
+      impact: leverage >= 65 ? "positive" : leverage >= 40 ? "neutral" : "negative",
+      description: `Leverage score is ${leverage}/100 from debt ratios and interest coverage.`,
+    },
+    {
+      name: "Operating Efficiency",
+      impact: efficiency >= 65 ? "positive" : efficiency >= 40 ? "neutral" : "negative",
+      description: `Efficiency score is ${efficiency}/100 from asset, inventory, and receivables turnover.`,
+    },
+  ];
+
+  return {
+    overallRisk,
+    riskScore,
+    confidence: 88,
+    altmanZScore: parseFloat(altmanZScore.toFixed(4)),
+    categoryScores: { liquidity, profitability, leverage, efficiency },
+    factors,
+  };
+};
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -51,11 +166,7 @@ serve(async (req) => {
     }
 
     // Calculate Altman Z-Score deterministically (server-side validation)
-    const altmanZScore = 1.2 * (ratios.workingCapitalTA || 0) +
-                         1.4 * (ratios.retainedEarningsTA || 0) +
-                         3.3 * (ratios.ebitTA || 0) +
-                         0.6 * (ratios.marketEquityTL || 0) +
-                         1.0 * (ratios.salesTA || 0);
+    const altmanZScore = calculateAltmanZScore(ratios);
     
     const zScoreZone = altmanZScore > 2.99 ? "Safe Zone" : altmanZScore > 1.81 ? "Grey Zone" : "Distress Zone";
 
