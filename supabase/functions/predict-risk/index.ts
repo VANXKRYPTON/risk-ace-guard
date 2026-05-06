@@ -162,7 +162,10 @@ serve(async (req) => {
 
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     if (!LOVABLE_API_KEY) {
-      throw new Error('LOVABLE_API_KEY is not configured');
+      console.warn('LOVABLE_API_KEY is not configured; using deterministic fallback assessment.');
+      return new Response(JSON.stringify({ assessment: buildDeterministicAssessment(ratios), fallback: true }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
     // Calculate Altman Z-Score deterministically (server-side validation)
@@ -284,8 +287,12 @@ Return ONLY the JSON object with your ensemble assessment.`;
         });
       }
       if (response.status === 402) {
-        return new Response(JSON.stringify({ error: "API credits exhausted. Please add credits to continue." }), {
-          status: 402,
+        console.warn("AI credits exhausted; returning deterministic fallback assessment.");
+        return new Response(JSON.stringify({
+          assessment: buildDeterministicAssessment(ratios),
+          fallback: true,
+          warning: "AI credits exhausted, so a deterministic academic scoring model was used.",
+        }), {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
