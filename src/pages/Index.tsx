@@ -94,16 +94,9 @@ const Index = () => {
       };
 
       if (user) {
-        // Save with user_id for authenticated users
         await supabase
           .from("assessment_history")
           .insert({ ...insertData, user_id: user.id, session_id: sessionId || "authenticated" });
-      } else if (sessionId) {
-        // Fallback to session-based saving
-        const sessionSupabase = createSessionSupabase(sessionId);
-        await sessionSupabase
-          .from("assessment_history")
-          .insert({ ...insertData, session_id: sessionId });
       }
       
       setTimeout(() => {
